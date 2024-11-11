@@ -97,45 +97,51 @@
                                              <children>
                                                 <AnchorPane prefHeight="530.4" prefWidth="300.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                                    <children>
-                                                      <TextField fx:id="cultivar_nomepopular" layoutX="10.0" layoutY="137.0" prefHeight="35.0" prefWidth="280.0" styleClass="textfield" />
-                                                      <Label layoutX="12.0" layoutY="109.0" text="Nome popular">
+                                                      <TextField fx:id="cultivar_nomepopular" layoutX="10.0" layoutY="179.0" prefHeight="35.0" prefWidth="280.0" styleClass="textfield" />
+                                                      <Label layoutX="12.0" layoutY="152.0" text="Nome popular">
                                                          <font>
                                                             <Font name="Arial Bold" size="15.0" />
                                                          </font>
                                                       </Label>
-                                                      <Label layoutX="48.0" layoutY="48.0" text="Gerenciar Cultivar" textFill="#4a7c59">
+                                                      <Label layoutX="48.0" layoutY="21.0" text="Gerenciar Cultivar" textFill="#4a7c59">
                                                          <font>
                                                             <Font name="Arial Bold" size="22.0" />
                                                          </font>
                                                       </Label>
-                                                      <Label layoutX="21.0" layoutY="195.0" text="Nome científico">
+                                                      <Label layoutX="21.0" layoutY="224.0" text="Nome científico">
                                                          <font>
                                                             <Font name="Arial Bold" size="15.0" />
                                                          </font>
                                                       </Label>
-                                                      <TextField fx:id="cultivar_nomecientifico" layoutX="10.0" layoutY="221.0" prefHeight="35.0" prefWidth="280.0" styleClass="textfield" />
-                                                      <Label layoutX="21.0" layoutY="275.0" text="Quantidade de dias até colheita">
+                                                      <TextField fx:id="cultivar_nomecientifico" layoutX="10.0" layoutY="251.0" prefHeight="35.0" prefWidth="280.0" styleClass="textfield" />
+                                                      <Label layoutX="21.0" layoutY="297.0" text="Quantidade de dias até colheita">
                                                          <font>
                                                             <Font name="Arial Bold" size="15.0" />
                                                          </font>
                                                       </Label>
-                                                      <ComboBox fx:id="cultivar_diasatecolheita" layoutX="10.0" layoutY="302.0" prefHeight="35.0" prefWidth="280.0" styleClass="textfield" />
-                                                      <Button fx:id="cultivar_addButton" layoutX="34.0" layoutY="406.0" mnemonicParsing="false" prefHeight="45.0" prefWidth="110.0" styleClass="add-btn" text="Adicionar">
+                                                      <Button fx:id="cultivar_addButton" layoutX="34.0" layoutY="406.0" mnemonicParsing="false" onAction="#cultivarAdd" prefHeight="45.0" prefWidth="110.0" styleClass="add-btn" text="Adicionar">
                                                          <graphic>
                                                             <FontAwesomeIcon fill="WHITE" glyphName="PLUS" />
                                                          </graphic>
                                                       </Button>
-                                                      <Button fx:id="cultivar_delButton" layoutX="155.0" layoutY="406.0" mnemonicParsing="false" prefHeight="45.0" prefWidth="110.0" styleClass="add-btn" text="Deletar">
+                                                      <Button fx:id="cultivar_delButton" layoutX="155.0" layoutY="406.0" mnemonicParsing="false" onAction="#cultivarDelete" prefHeight="45.0" prefWidth="110.0" styleClass="add-btn" text="Deletar">
                                                          <graphic>
                                                             <FontAwesomeIcon fill="WHITE" glyphName="TRASH" />
                                                          </graphic>
                                                       </Button>
-                                                      <Button fx:id="cultivar_editButton" layoutX="34.0" layoutY="462.0" mnemonicParsing="false" prefHeight="45.0" prefWidth="110.0" styleClass="add-btn" text="Editar">
+                                                      <Button fx:id="cultivar_editButton" layoutX="34.0" layoutY="462.0" mnemonicParsing="false" onAction="#cultivarUpdate" prefHeight="45.0" prefWidth="110.0" styleClass="add-btn" text="Editar">
                                                          <graphic>
                                                             <FontAwesomeIcon fill="WHITE" glyphName="PENCIL" />
                                                          </graphic>
                                                       </Button>
-                                                      <Button fx:id="cultivar_clearButton" layoutX="155.0" layoutY="462.0" mnemonicParsing="false" prefHeight="45.0" prefWidth="110.0" styleClass="add-btn" text="Limpar" />
+                                                      <Button fx:id="cultivar_clearButton" layoutX="155.0" layoutY="462.0" mnemonicParsing="false" onAction="#cultivarClear" prefHeight="45.0" prefWidth="110.0" styleClass="add-btn" text="Limpar" />
+                                                      <TextField fx:id="cultivar_diasatecolheita" layoutX="10.0" layoutY="321.0" prefHeight="35.0" prefWidth="280.0" styleClass="textfield" />
+                                                      <TextField fx:id="cultivar_id" disable="true" layoutX="10.0" layoutY="111.0" prefHeight="35.0" prefWidth="280.0" styleClass="textfield" />
+                                                      <Label layoutX="12.0" layoutY="86.0" text="ID">
+                                                         <font>
+                                                            <Font name="Arial Bold" size="15.0" />
+                                                         </font>
+                                                      </Label>
                                                    </children>
                                                 </AnchorPane>
                                              </children>
@@ -148,16 +154,14 @@
                                              <children>
                                                 <AnchorPane layoutX="23.0" layoutY="117.0" prefHeight="530.4" prefWidth="545.6" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                                    <children>
-                                                      <TextField fx:id="cultivar_search" layoutX="22.0" layoutY="14.0" prefHeight="35.0" prefWidth="280.0" styleClass="search" />
-                                                      <TableView fx:id="table_cultivar" layoutX="21.0" layoutY="73.0" prefHeight="442.0" prefWidth="502.0">
+                                                      <TableView fx:id="table_cultivar" layoutX="21.0" layoutY="73.0" onMouseClicked="#cultivarSelect" prefHeight="530.4" prefWidth="545.6" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                                         <columns>
                                                           <TableColumn fx:id="table_cultivar_id" prefWidth="61.5999755859375" text="ID" />
                                                           <TableColumn fx:id="table_cultivar_nomepopular" prefWidth="141.60003662109375" text="NOME POPULAR" />
-                                                            <TableColumn fx:id="table_cultivar_nomecientifico" prefWidth="151.199951171875" text="NOME CIENTÍFICO" />
-                                                            <TableColumn fx:id="table_cultivar_diasatecolheita" prefWidth="147.19989013671875" text="DIAS ATÉ COLHEITA" />
+                                                            <TableColumn fx:id="table_cultivar_nomecientifico" prefWidth="184.79998779296875" text="NOME CIENTÍFICO" />
+                                                            <TableColumn fx:id="table_cultivar_diasatecolheita" prefWidth="154.4000244140625" text="DIAS ATÉ COLHEITA" />
                                                         </columns>
                                                       </TableView>
-                                                      <FontAwesomeIcon fill="#4a7c59" glyphName="SEARCH" layoutX="29.0" layoutY="37.0" size="1.5em" />
                                                    </children>
                                                 </AnchorPane>
                                              </children>
@@ -174,8 +178,8 @@
                                              <children>
                                                 <AnchorPane layoutY="-2.6" prefHeight="530.4" prefWidth="300.0" AnchorPane.bottomAnchor="2.6000000000000227" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="-2.6">
                                                    <children>
-                                                      <TextField fx:id="localizacao_descricao" layoutX="10.0" layoutY="137.0" prefHeight="35.0" prefWidth="280.0" styleClass="textfield" />
-                                                      <Label layoutX="12.0" layoutY="109.0" text="Descrição">
+                                                      <TextField fx:id="localizacao_descricao" layoutX="10.0" layoutY="200.0" prefHeight="35.0" prefWidth="280.0" styleClass="textfield" />
+                                                      <Label layoutX="12.0" layoutY="172.0" text="Descrição">
                                                          <font>
                                                             <Font name="Arial Bold" size="15.0" />
                                                          </font>
@@ -185,34 +189,40 @@
                                                             <Font name="Arial Bold" size="22.0" />
                                                          </font>
                                                       </Label>
-                                                      <Label layoutX="21.0" layoutY="195.0" text="Coluna">
+                                                      <Label layoutX="21.0" layoutY="258.0" text="Coluna">
                                                          <font>
                                                             <Font name="Arial Bold" size="15.0" />
                                                          </font>
                                                       </Label>
-                                                      <TextField fx:id="localizacao_coluna" layoutX="10.0" layoutY="221.0" prefHeight="35.0" prefWidth="280.0" styleClass="textfield" />
-                                                      <Label layoutX="21.0" layoutY="275.0" text="Linha">
+                                                      <TextField fx:id="localizacao_coluna" layoutX="10.0" layoutY="284.0" prefHeight="35.0" prefWidth="280.0" styleClass="textfield" />
+                                                      <Label layoutX="27.0" layoutY="320.0" text="Linha">
                                                          <font>
                                                             <Font name="Arial Bold" size="15.0" />
                                                          </font>
                                                       </Label>
-                                                      <Button fx:id="localizacao_addButton" layoutX="34.0" layoutY="406.0" mnemonicParsing="false" prefHeight="45.0" prefWidth="110.0" styleClass="add-btn" text="Adicionar">
+                                                      <Button fx:id="localizacao_addButton" layoutX="34.0" layoutY="406.0" mnemonicParsing="false" onAction="#localizacaoAdd" prefHeight="45.0" prefWidth="110.0" styleClass="add-btn" text="Adicionar">
                                                          <graphic>
                                                             <FontAwesomeIcon fill="WHITE" glyphName="PLUS" />
                                                          </graphic>
                                                       </Button>
-                                                      <Button fx:id="localizacao_delButton" layoutX="155.0" layoutY="406.0" mnemonicParsing="false" prefHeight="45.0" prefWidth="110.0" styleClass="add-btn" text="Deletar">
+                                                      <Button fx:id="localizacao_delButton" layoutX="155.0" layoutY="406.0" mnemonicParsing="false" onAction="#localizacaoDelete" prefHeight="45.0" prefWidth="110.0" styleClass="add-btn" text="Deletar">
                                                          <graphic>
                                                             <FontAwesomeIcon fill="WHITE" glyphName="TRASH" />
                                                          </graphic>
                                                       </Button>
-                                                      <Button fx:id="localizacao_editButton" layoutX="34.0" layoutY="462.0" mnemonicParsing="false" prefHeight="45.0" prefWidth="110.0" styleClass="add-btn" text="Editar">
+                                                      <Button fx:id="localizacao_editButton" layoutX="34.0" layoutY="462.0" mnemonicParsing="false" onAction="#localizacaoUpdate" prefHeight="45.0" prefWidth="110.0" styleClass="add-btn" text="Editar">
                                                          <graphic>
                                                             <FontAwesomeIcon fill="WHITE" glyphName="PENCIL" />
                                                          </graphic>
                                                       </Button>
-                                                      <Button fx:id="localizacao_clearButton" layoutX="155.0" layoutY="462.0" mnemonicParsing="false" prefHeight="45.0" prefWidth="110.0" styleClass="add-btn" text="Limpar" />
-                                                      <TextField fx:id="localizacao_linha" layoutX="10.0" layoutY="303.0" prefHeight="35.0" prefWidth="280.0" styleClass="textfield" />
+                                                      <Button fx:id="localizacao_clearButton" layoutX="155.0" layoutY="462.0" mnemonicParsing="false" onAction="#localizacaoClear" prefHeight="45.0" prefWidth="110.0" styleClass="add-btn" text="Limpar" />
+                                                      <TextField fx:id="localizacao_linha" layoutX="10.0" layoutY="344.0" prefHeight="35.0" prefWidth="280.0" styleClass="textfield" />
+                                                      <TextField fx:id="localizacao_id" disable="true" layoutX="10.0" layoutY="127.0" prefHeight="35.0" prefWidth="280.0" styleClass="textfield" />
+                                                      <Label layoutX="12.0" layoutY="99.0" text="ID">
+                                                         <font>
+                                                            <Font name="Arial Bold" size="15.0" />
+                                                         </font>
+                                                      </Label>
                                                    </children>
                                                 </AnchorPane>
                                              </children>
@@ -225,23 +235,21 @@
                                              <children>
                                                 <AnchorPane layoutX="23.0" layoutY="117.0" prefHeight="530.4" prefWidth="545.6" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                                    <children>
-                                                      <TextField fx:id="localizacao_search" layoutX="22.0" layoutY="14.0" prefHeight="35.0" prefWidth="280.0" styleClass="search" />
-                                                      <TableView fx:id="table_localizacao" layoutX="22.0" layoutY="76.0" prefHeight="442.0" prefWidth="502.0">
+                                                      <TableView fx:id="table_localizacao" layoutX="22.0" layoutY="76.0" onMouseClicked="#localizacaoSelect" prefHeight="530.4" prefWidth="545.6" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                                          <columns>
                                                             <TableColumn fx:id="table_localizacao_id" prefWidth="61.5999755859375" text="ID" />
-                                                            <TableColumn fx:id="table_localizacao_descricao" prefWidth="141.60003662109375" text="DESCRIÇÃO" />
-                                                            <TableColumn fx:id="table_localizacao_coluna" prefWidth="151.199951171875" text="COLUNA" />
-                                                            <TableColumn fx:id="table_localizacao_linha" prefWidth="147.19989013671875" text="LINHA" />
+                                                            <TableColumn fx:id="table_localizacao_descricao" prefWidth="292.7999267578125" text="DESCRIÇÃO" />
+                                                            <TableColumn fx:id="table_localizacao_coluna" prefWidth="77.60003662109375" text="COLUNA" />
+                                                            <TableColumn fx:id="table_localizacao_linha" prefWidth="112.0" text="LINHA" />
                                                          </columns>
                                                       </TableView>
-                                                      <FontAwesomeIcon fill="#4a7c59" glyphName="SEARCH" layoutX="29.0" layoutY="37.0" size="1.5em" />
                                                    </children>
                                                 </AnchorPane>
                                              </children>
                                           </AnchorPane>
                                        </children>
                                     </AnchorPane>
-                                    <AnchorPane fx:id="plantio_page" layoutX="10.0" layoutY="10.0" prefHeight="554.4" prefWidth="891.2" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                    <AnchorPane fx:id="plantio_page" layoutX="10.0" layoutY="10.0" prefHeight="554.4" prefWidth="891.2" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                        <children>
                                           <AnchorPane layoutX="14.0" layoutY="14.0" prefHeight="530.0" prefWidth="300.0" stylesheets="@menu.css">
                                              <styleClass>

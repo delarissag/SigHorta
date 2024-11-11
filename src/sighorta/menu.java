@@ -59,10 +59,13 @@ public class menu implements Initializable {
     private Button cultivar_delButton;
 
     @FXML
-    private ComboBox<?> cultivar_diasatecolheita;
+    private TextField cultivar_diasatecolheita;
 
     @FXML
     private Button cultivar_editButton;
+
+    @FXML
+    private TextField cultivar_id;
 
     @FXML
     private TextField cultivar_nomecientifico;
@@ -102,6 +105,9 @@ public class menu implements Initializable {
 
     @FXML
     private Button localizacao_editButton;
+    
+    @FXML
+    private TextField localizacao_id;
 
     @FXML
     private TextField localizacao_linha;
@@ -158,34 +164,34 @@ public class menu implements Initializable {
     private Button relatorios_button;
 
     @FXML
-    private TableView<?> table_cultivar;
+    private TableView<cultivarData> table_cultivar;
 
     @FXML
-    private TableColumn<?, ?> table_cultivar_diasatecolheita;
+    private TableColumn<cultivarData, Integer> table_cultivar_diasatecolheita;
 
     @FXML
-    private TableColumn<?, ?> table_cultivar_id;
+    private TableColumn<cultivarData, Integer> table_cultivar_id;
 
     @FXML
-    private TableColumn<?, ?> table_cultivar_nomecientifico;
+    private TableColumn<cultivarData, String> table_cultivar_nomecientifico;
 
     @FXML
-    private TableColumn<?, ?> table_cultivar_nomepopular;
+    private TableColumn<cultivarData, String> table_cultivar_nomepopular;
 
     @FXML
-    private TableView<?> table_localizacao;
+    private TableView<localizacaoData> table_localizacao;
 
     @FXML
-    private TableColumn<?, ?> table_localizacao_coluna;
+    private TableColumn<localizacaoData, Integer> table_localizacao_coluna;
 
     @FXML
-    private TableColumn<?, ?> table_localizacao_descricao;
+    private TableColumn<localizacaoData, String> table_localizacao_descricao;
 
     @FXML
-    private TableColumn<?, ?> table_localizacao_id;
+    private TableColumn<localizacaoData, Integer> table_localizacao_id;
 
     @FXML
-    private TableColumn<?, ?> table_localizacao_linha;
+    private TableColumn<localizacaoData, Integer> table_localizacao_linha;
 
     @FXML
     private TableView<plantioData> table_plantio;
@@ -632,7 +638,6 @@ public class menu implements Initializable {
                 );
 
                 listData.add(plantio);
-                System.out.println("Carregando: " + plantio);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -655,8 +660,472 @@ public class menu implements Initializable {
         table_plantio.setItems(plantioList);
     }
 
-    public void switchForm(ActionEvent event) {
+    public ObservableList<cultivarData> cultivarData() {
+        ObservableList<cultivarData> listData = FXCollections.observableArrayList();
+        String sql = "SELECT c.id, c.nome_popular, c.nome_cientifico, c.dias_ate_colheita"
+                + " FROM cultivar c";
 
+        connect = database.connectDb();
+
+        try {
+            prepare = connect.prepareStatement(sql);
+            result = prepare.executeQuery();
+
+            while (result.next()) {
+                // Construa o objeto plantioData com os valores retornados
+                cultivarData cultivar = new cultivarData(
+                        result.getInt("id"),
+                        result.getString("nome_popular"),
+                        result.getString("nome_cientifico"),
+                        result.getInt("dias_ate_colheita")
+                );
+
+                listData.add(cultivar);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return listData;
+    }
+
+    public ObservableList<cultivarData> cultivarList;
+
+    public void cultivarShowListData() {
+
+        cultivarList = cultivarData();
+
+        table_cultivar_id.setCellValueFactory(new PropertyValueFactory<>("cultivar_id"));
+        table_cultivar_nomepopular.setCellValueFactory(new PropertyValueFactory<>("cultivar_nomepopular"));
+        table_cultivar_nomecientifico.setCellValueFactory(new PropertyValueFactory<>("cultivar_nomecientifico"));
+        table_cultivar_diasatecolheita.setCellValueFactory(new PropertyValueFactory<>("cultivar_diasatecolheita"));
+
+        table_cultivar.setItems(cultivarList);
+    }
+
+    public void cultivarAdd() {
+
+        String sql = "INSERT INTO cultivar (nome_popular,nome_cientifico,dias_ate_colheita) "
+                + "VALUES (?, ?, ?)";
+
+        connect = database.connectDb();
+
+        try {
+            Alert alert;
+
+            // Verifique se os campos obrigatórios estão preenchidos
+            if (cultivar_nomepopular.getText().isEmpty()
+                    || cultivar_nomecientifico.getText().isEmpty()
+                    || cultivar_diasatecolheita.getText().isEmpty()) {
+
+                alert = new Alert(AlertType.ERROR);
+                alert.setTitle("Mensagem de Erro");
+                alert.setHeaderText(null);
+                alert.setContentText("Por favor, preencha todos os campos em branco.");
+                alert.showAndWait();
+
+            } // CHECK IF THE FLOWER ID IS ALREADY EXIST
+            String checkData = "SELECT id FROM cultivar WHERE id = '"
+                    + cultivar_id.getText() + "'";
+
+            statement = connect.createStatement();
+            result = statement.executeQuery(checkData);
+
+            if (result.next()) {
+                alert = new Alert(AlertType.ERROR);
+                alert.setTitle("Error Message");
+                alert.setHeaderText(null);
+                alert.setContentText("Cultivar ID " + cultivar_id.getText() + " já existente!");
+                alert.showAndWait();
+            } else {
+                prepare = connect.prepareStatement(sql);
+                prepare.setString(1, cultivar_nomepopular.getText());
+                prepare.setString(2, cultivar_nomecientifico.getText());
+                prepare.setString(3, cultivar_diasatecolheita.getText());
+                
+                prepare.executeUpdate();
+
+                alert = new Alert(AlertType.INFORMATION);
+                alert.setTitle("Information Message");
+                alert.setHeaderText(null);
+                alert.setContentText("Successfully Added!");
+                alert.showAndWait();
+
+                // SHOW UPDATED TABLEVIEW
+                cultivarShowListData();
+
+                // CLEAR ALL FIELDS
+                cultivarClear();
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    public void cultivarClear() {
+
+        cultivar_id.setText("");
+        cultivar_nomepopular.setText("");
+        cultivar_nomecientifico.setText("");
+        cultivar_diasatecolheita.setText("");
+        
+    }
+    
+    public void cultivarUpdate() {
+
+        // Preparar a instrução SQL de atualização     
+        String sql = "UPDATE cultivar SET nome_popular = '" + cultivar_nomepopular.getText()
+           + "', nome_cientifico = '" + cultivar_nomecientifico.getText()
+           + "', dias_ate_colheita = '" + cultivar_diasatecolheita.getText() 
+           + "' WHERE id = '" + cultivar_id.getText() + "'";
+        connect = database.connectDb();
+
+        try {
+            Alert alert;
+
+            // Verificar se todos os campos obrigatórios estão preenchidos
+            if (cultivar_nomepopular.getText().isEmpty()
+                    || cultivar_nomecientifico.getText().isEmpty()
+                    || cultivar_diasatecolheita.getText().isEmpty()) {
+
+                alert = new Alert(AlertType.ERROR);
+                alert.setTitle("Mensagem de Erro");
+                alert.setHeaderText(null);
+                alert.setContentText("Por favor, preencha todos os campos obrigatórios.");
+                alert.showAndWait();
+
+            } else {
+                // Confirmar atualização
+                alert = new Alert(AlertType.CONFIRMATION);
+                alert.setTitle("Mensagem de Confirmação");
+                alert.setHeaderText(null);
+                alert.setContentText("Tem certeza de que deseja atualizar o Cultivar ID: " + cultivar_id.getText() + "?");
+                Optional<ButtonType> option = alert.showAndWait();
+
+                if (option.get().equals(ButtonType.OK)) {
+                    // Executa a atualização
+                    statement = connect.createStatement();
+                    statement.executeUpdate(sql);
+
+                    alert = new Alert(AlertType.INFORMATION);
+                    alert.setTitle("Mensagem de Informação");
+                    alert.setHeaderText(null);
+                    alert.setContentText("Atualização realizada com sucesso!");
+                    alert.showAndWait();
+
+                    // Mostrar dados atualizados na TableView
+                    cultivarShowListData();
+
+                    // Limpar todos os campos
+                    cultivarClear();
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    public void cultivarSelect() {
+        cultivarData cultivar = table_cultivar.getSelectionModel().getSelectedItem();
+        if (cultivar == null) {
+            System.out.println("Nenhum cultivar foi selecionado.");
+            return;  // Se não houver seleção, retorna sem fazer mais nada
+        }
+        int num = table_cultivar.getSelectionModel().getSelectedIndex();
+
+        if ((num - 1) < -1) {
+            return;
+        }
+
+        cultivar_id.setText(String.valueOf(cultivar.getCultivar_id()));
+        cultivar_nomepopular.setText(cultivar.getCultivar_nomepopular());
+        cultivar_nomecientifico.setText(cultivar.getCultivar_nomecientifico());
+        cultivar_diasatecolheita.setText(String.valueOf(cultivar.getCultivar_diasatecolheita()));
+
+    }
+    
+    public void cultivarDelete() {
+        String plantioId = id_plantio.getText();
+        String sql = "DELETE FROM cultivar WHERE id = '"
+                + cultivar_id.getText() + "'";
+
+        connect = database.connectDb();
+
+        try {
+            Alert alert;
+
+            if (cultivar_id.getText().isEmpty()) {
+                alert = new Alert(AlertType.ERROR);
+                alert.setTitle("Erro");
+                alert.setHeaderText(null);
+                alert.setContentText("Por gentileza, filtre o id do item que deseja deletar");
+                alert.showAndWait();
+
+            } else {
+                alert = new Alert(AlertType.CONFIRMATION);
+                alert.setTitle("Messagem de confirmação");
+                alert.setHeaderText(null);
+                alert.setContentText("Você tem certeza que deseja deletar o cultivar : " + cultivar_id.getText() + "?");
+                Optional<ButtonType> option = alert.showAndWait();
+
+                if (option.get().equals(ButtonType.OK)) {
+                    statement = connect.createStatement();
+                    statement.executeUpdate(sql);
+
+                    alert = new Alert(AlertType.INFORMATION);
+                    alert.setTitle("Information Message");
+                    alert.setHeaderText(null);
+                    alert.setContentText("Deletado com sucesso!");
+                    alert.showAndWait();
+
+                    // SHOW UPDATED TABLEVIEW
+                    cultivarShowListData();
+
+                    // CLEAR ALL FIELDS
+                    cultivarClear();
+                }
+
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+    
+        public ObservableList<localizacaoData> localizacaoData() {
+        ObservableList<localizacaoData> listData = FXCollections.observableArrayList();
+        String sql = "SELECT l.id, l.descricao, l.coluna, l.linha"
+                + " FROM localizacao l";
+
+        connect = database.connectDb();
+
+        try {
+            prepare = connect.prepareStatement(sql);
+            result = prepare.executeQuery();
+
+            while (result.next()) {
+                // Construa o objeto plantioData com os valores retornados
+                localizacaoData localizacao = new localizacaoData(
+                        result.getInt("id"),
+                        result.getString("descricao"),
+                        result.getInt("coluna"),
+                        result.getInt("linha")
+                );
+
+                listData.add(localizacao);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return listData;
+    }
+
+    public ObservableList<localizacaoData> localizacaoList;
+
+    public void localizacaoShowListData() {
+
+        localizacaoList = localizacaoData();
+
+        table_localizacao_id.setCellValueFactory(new PropertyValueFactory<>("localizacao_id"));
+        table_localizacao_descricao.setCellValueFactory(new PropertyValueFactory<>("localizacao_descricao"));
+        table_localizacao_coluna.setCellValueFactory(new PropertyValueFactory<>("localizacao_coluna"));
+        table_localizacao_linha.setCellValueFactory(new PropertyValueFactory<>("localizacao_linha"));
+
+        table_localizacao.setItems(localizacaoList);
+    }
+
+    public void localizacaoAdd() {
+
+        String sql = "INSERT INTO localizacao (descricao,coluna,linha) "
+                + "VALUES (?, ?, ?)";
+
+        connect = database.connectDb();
+
+        try {
+            Alert alert;
+
+            // Verifique se os campos obrigatórios estão preenchidos
+            if (localizacao_descricao.getText().isEmpty()
+                    || localizacao_coluna.getText().isEmpty()
+                    || localizacao_linha.getText().isEmpty()) {
+
+                alert = new Alert(AlertType.ERROR);
+                alert.setTitle("Mensagem de Erro");
+                alert.setHeaderText(null);
+                alert.setContentText("Por favor, preencha todos os campos em branco.");
+                alert.showAndWait();
+
+            } 
+            String checkData = "SELECT id FROM cultivar WHERE id = '"
+                    + localizacao_id.getText() + "'";
+
+            statement = connect.createStatement();
+            result = statement.executeQuery(checkData);
+
+            if (result.next()) {
+                alert = new Alert(AlertType.ERROR);
+                alert.setTitle("Error Message");
+                alert.setHeaderText(null);
+                alert.setContentText("Cultivar ID " + localizacao_id.getText() + " já existente!");
+                alert.showAndWait();
+            } else {
+                prepare = connect.prepareStatement(sql);
+                prepare.setString(1, localizacao_descricao.getText());
+                prepare.setString(2, localizacao_coluna.getText());
+                prepare.setString(3, localizacao_linha.getText());
+                
+                prepare.executeUpdate();
+
+                alert = new Alert(AlertType.INFORMATION);
+                alert.setTitle("Information Message");
+                alert.setHeaderText(null);
+                alert.setContentText("Successfully Added!");
+                alert.showAndWait();
+
+                // SHOW UPDATED TABLEVIEW
+                localizacaoShowListData();
+
+                // CLEAR ALL FIELDS
+                localizacaoClear();
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    public void localizacaoClear() {
+
+        localizacao_id.setText("");
+        localizacao_descricao.setText("");
+        localizacao_coluna.setText("");
+        localizacao_linha.setText("");
+        
+    }
+    
+    public void localizacaoUpdate() {
+
+        // Preparar a instrução SQL de atualização     
+        String sql = "UPDATE localizacao SET descricao = '" + localizacao_descricao.getText()
+           + "', coluna = '" + localizacao_coluna.getText()
+           + "', linha = '" + localizacao_linha.getText() 
+           + "' WHERE id = '" + localizacao_id.getText() + "'";
+        connect = database.connectDb();
+
+        try {
+            Alert alert;
+
+            // Verificar se todos os campos obrigatórios estão preenchidos
+            if (localizacao_id.getText().isEmpty()
+                    || localizacao_coluna.getText().isEmpty()
+                    || localizacao_linha.getText().isEmpty()) {
+
+                alert = new Alert(AlertType.ERROR);
+                alert.setTitle("Mensagem de Erro");
+                alert.setHeaderText(null);
+                alert.setContentText("Por favor, preencha todos os campos obrigatórios.");
+                alert.showAndWait();
+
+            } else {
+                // Confirmar atualização
+                alert = new Alert(AlertType.CONFIRMATION);
+                alert.setTitle("Mensagem de Confirmação");
+                alert.setHeaderText(null);
+                alert.setContentText("Tem certeza de que deseja atualizar a Localização ID: " + localizacao_id.getText() + "?");
+                Optional<ButtonType> option = alert.showAndWait();
+
+                if (option.get().equals(ButtonType.OK)) {
+                    // Executa a atualização
+                    statement = connect.createStatement();
+                    statement.executeUpdate(sql);
+
+                    alert = new Alert(AlertType.INFORMATION);
+                    alert.setTitle("Mensagem de Informação");
+                    alert.setHeaderText(null);
+                    alert.setContentText("Atualização realizada com sucesso!");
+                    alert.showAndWait();
+
+                    // Mostrar dados atualizados na TableView
+                    localizacaoShowListData();
+
+                    // Limpar todos os campos
+                    localizacaoClear();
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    public void localizacaoSelect() {
+        localizacaoData localizacao = table_localizacao.getSelectionModel().getSelectedItem();
+        if (localizacao == null) {
+            System.out.println("Nenhuma localizacao foi selecionada.");
+            return;  // Se não houver seleção, retorna sem fazer mais nada
+        }
+        int num = table_localizacao.getSelectionModel().getSelectedIndex();
+
+        if ((num - 1) < -1) {
+            return;
+        }
+
+        localizacao_id.setText(String.valueOf(localizacao.getLocalizacao_id()));
+        localizacao_descricao.setText(localizacao.getLocalizacao_descricao());
+        localizacao_coluna.setText(String.valueOf(localizacao.getLocalizacao_coluna()));
+        localizacao_linha.setText(String.valueOf(localizacao.getLocalizacao_linha()));
+
+    }
+    
+    public void localizacaoDelete() {
+        String sql = "DELETE FROM localizacao WHERE id = '"
+                + localizacao_id.getText() + "'";
+
+        connect = database.connectDb();
+
+        try {
+            Alert alert;
+
+            if (localizacao_id.getText().isEmpty()) {
+                alert = new Alert(AlertType.ERROR);
+                alert.setTitle("Erro");
+                alert.setHeaderText(null);
+                alert.setContentText("Por gentileza, filtre o id do item que deseja deletar");
+                alert.showAndWait();
+
+            } else {
+                alert = new Alert(AlertType.CONFIRMATION);
+                alert.setTitle("Messagem de confirmação");
+                alert.setHeaderText(null);
+                alert.setContentText("Você tem certeza que deseja deletar a localização : " + localizacao_id.getText() + "?");
+                Optional<ButtonType> option = alert.showAndWait();
+
+                if (option.get().equals(ButtonType.OK)) {
+                    statement = connect.createStatement();
+                    statement.executeUpdate(sql);
+
+                    alert = new Alert(AlertType.INFORMATION);
+                    alert.setTitle("Information Message");
+                    alert.setHeaderText(null);
+                    alert.setContentText("Deletado com sucesso!");
+                    alert.showAndWait();
+
+                    // SHOW UPDATED TABLEVIEW
+                    localizacaoShowListData();
+
+                    // CLEAR ALL FIELDS
+                    localizacaoClear();
+                }
+
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+
+    public void switchForm(ActionEvent event) {
+        
         if (event.getSource() == home_button) {
             plantio_page.setVisible(false);
             cultivar_page.setVisible(false);
@@ -670,6 +1139,7 @@ public class menu implements Initializable {
             usuarios_button.setStyle("-fx-background-color: transparent");
 
         } else if (event.getSource() == plantio_button) {
+            plantioClear();
             plantio_page.setVisible(true);
             cultivar_page.setVisible(false);
             localizacao_page.setVisible(false);
@@ -684,9 +1154,11 @@ public class menu implements Initializable {
             plantioShowListData();
 
         } else if (event.getSource() == cultivar_button) {
+            cultivarClear();
             plantio_page.setVisible(false);
             cultivar_page.setVisible(true);
             localizacao_page.setVisible(false);
+            
 
             cultivar_button.setStyle("-fx-background-color:linear-gradient(to bottom right, #d3133d, #a4262f)");
             relatorios_button.setStyle("-fx-background-color: transparent");
@@ -694,8 +1166,11 @@ public class menu implements Initializable {
             plantio_button.setStyle("-fx-background-color: transparent");
             localizacao_button.setStyle("-fx-background-color: transparent");
             usuarios_button.setStyle("-fx-background-color: transparent");
+            
+            cultivarShowListData();
 
         } else if (event.getSource() == localizacao_button) {
+            localizacaoClear();
             plantio_page.setVisible(false);
             cultivar_page.setVisible(false);
             localizacao_page.setVisible(true);
@@ -706,6 +1181,7 @@ public class menu implements Initializable {
             plantio_button.setStyle("-fx-background-color: transparent");
             cultivar_button.setStyle("-fx-background-color: transparent");
             usuarios_button.setStyle("-fx-background-color: transparent");
+            localizacaoShowListData();
         }
 
     }
@@ -713,11 +1189,6 @@ public class menu implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         displayUsername();
-        loadCultivarDescriptions();
-        loadLocalizacaoDescriptions();
-        loadEstadoDescriptions();
-        plantioShowListData();
-
     }
 
 }
