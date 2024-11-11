@@ -19,12 +19,13 @@ public class plantioData {
     private String plantio_estado;
     
     public plantioData(int plantio_id, String plantio_cultivar, String plantio_localizacao, 
-         Date plantio_dataplantio, Date plantio_datacolheita){
+         Date plantio_dataplantio, Date plantio_datacolheita, String plantio_estado){
         this.plantio_id = plantio_id;
         this.plantio_cultivar = plantio_cultivar;
         this.plantio_localizacao = plantio_localizacao;
         this.plantio_dataplantio = plantio_dataplantio;
         this.plantio_datacolheita = plantio_datacolheita;
+        this.plantio_estado = plantio_estado;
     }
     
     public int getPlantio_id() {

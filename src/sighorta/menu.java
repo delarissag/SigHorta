@@ -28,12 +28,14 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
+import javafx.scene.control.PasswordField;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
@@ -198,6 +200,9 @@ public class menu implements Initializable {
 
     @FXML
     private TableColumn<plantioData, String> table_plantio_datacolheita;
+    
+    @FXML
+    private TableColumn<plantioData, String> table_plantio_estado;
 
     @FXML
     private TableColumn<plantioData, String> table_plantio_dataplantio;
@@ -655,10 +660,13 @@ public class menu implements Initializable {
     public ObservableList<plantioData> plantioData() {
         ObservableList<plantioData> listData = FXCollections.observableArrayList();
         String sql = "SELECT p.id, c.nome_popular AS plantio_cultivar, l.descricao AS plantio_localizacao, "
-                + "p.dataPlantio, p.dataColheitaEstimada "
+                + "p.dataPlantio, p.dataColheitaEstimada, e.descricao AS plantio_estado "
                 + "FROM plantio p "
                 + "JOIN cultivar c ON p.id_cultivar = c.id "
-                + "JOIN localizacao l ON p.id_localizacao = l.id ";
+                + "JOIN localizacao l ON p.id_localizacao = l.id "
+                + "JOIN estado_plantio e ON p.estado = e.id ";
+        
+
 
         connect = database.connectDb();
 
@@ -673,7 +681,8 @@ public class menu implements Initializable {
                         result.getString("plantio_cultivar"),
                         result.getString("plantio_localizacao"),
                         result.getDate("dataPlantio"),
-                        result.getDate("dataColheitaEstimada")
+                        result.getDate("dataColheitaEstimada"),
+                        result.getString("plantio_estado")
                 );
 
                 listData.add(plantio);
@@ -695,6 +704,8 @@ public class menu implements Initializable {
         table_plantio_localizacao.setCellValueFactory(new PropertyValueFactory<>("plantio_localizacao"));
         table_plantio_dataplantio.setCellValueFactory(new PropertyValueFactory<>("plantio_dataplantio"));
         table_plantio_datacolheita.setCellValueFactory(new PropertyValueFactory<>("plantio_datacolheita"));
+        table_plantio_datacolheita.setCellValueFactory(new PropertyValueFactory<>("plantio_datacolheita"));
+        table_plantio_estado.setCellValueFactory(new PropertyValueFactory<>("plantio_estado"));
 
         table_plantio.setItems(plantioList);
     }
@@ -1205,11 +1216,10 @@ public class menu implements Initializable {
 
         table_usuarios.setItems(usuariosList);
     }
-
     public void usuariosAdd() {
-        
-        String sql = "INSERT INTO usuarios (nome,email,tipo_usuario) "
-                + "VALUES (?, ?, ?)";
+
+        // Adicione o campo senha ao SQL de inserção, definindo o valor "123" como senha padrão
+        String sql = "INSERT INTO usuarios (nome, email, tipo_usuario, senha) VALUES (?, ?, ?, '123')";
 
         connect = database.connectDb();
 
@@ -1220,53 +1230,55 @@ public class menu implements Initializable {
             if (usuarios_nome.getText().isEmpty()
                     || usuario_email.getText().isEmpty()
                     || usuarios_tipo.getSelectionModel().getSelectedItem() == null) {
-                
+
                 alert = new Alert(AlertType.ERROR);
                 alert.setTitle("Mensagem de Erro");
                 alert.setHeaderText(null);
                 alert.setContentText("Por favor, preencha todos os campos em branco.");
                 alert.showAndWait();
-
-            } 
-            String checkData = "SELECT id FROM usuarios WHERE id = '"
-                    + usuario_id.getText() + "'";
-
-            statement = connect.createStatement();
-            result = statement.executeQuery(checkData);
-            Integer tipoUsuarioId = getIdByDescription("tipo_usuario", "descricao", (String) usuarios_tipo.getSelectionModel().getSelectedItem());
-
-            if (result.next()) {
-                alert = new Alert(AlertType.ERROR);
-                alert.setTitle("Error Message");
-                alert.setHeaderText(null);
-                alert.setContentText("Usuario ID " + usuario_id.getText() + " já existente!");
-                alert.showAndWait();
             } else {
-                prepare = connect.prepareStatement(sql);
-                prepare.setString(1, usuarios_nome.getText());
-                prepare.setString(2, usuario_email.getText());
-                prepare.setInt(3, tipoUsuarioId);
-                
-                prepare.executeUpdate();
+                // Verificar se o ID já existe
+                String checkData = "SELECT id FROM usuarios WHERE id = '"
+                        + usuario_id.getText() + "'";
 
-                alert = new Alert(AlertType.INFORMATION);
-                alert.setTitle("Mensagem");
-                alert.setHeaderText(null);
-                alert.setContentText("Adicionado com sucesso!");
-                alert.showAndWait();
+                statement = connect.createStatement();
+                result = statement.executeQuery(checkData);
+                Integer tipoUsuarioId = getIdByDescription("tipo_usuario", "descricao", (String) usuarios_tipo.getSelectionModel().getSelectedItem());
 
-                // SHOW UPDATED TABLEVIEW
-                usuariosShowListData();
+                if (result.next()) {
+                    alert = new Alert(AlertType.ERROR);
+                    alert.setTitle("Error Message");
+                    alert.setHeaderText(null);
+                    alert.setContentText("Usuario ID " + usuario_id.getText() + " já existente!");
+                    alert.showAndWait();
+                } else {
+                    // Preparando a inserção com os valores definidos
+                    prepare = connect.prepareStatement(sql);
+                    prepare.setString(1, usuarios_nome.getText());
+                    prepare.setString(2, usuario_email.getText());
+                    prepare.setInt(3, tipoUsuarioId);
 
-                // CLEAR ALL FIELDS
-                usuariosClear();
+                    prepare.executeUpdate();
+
+                    alert = new Alert(AlertType.INFORMATION);
+                    alert.setTitle("Mensagem");
+                    alert.setHeaderText(null);
+                    alert.setContentText("Usuário adicionado com sucesso!");
+                    alert.showAndWait();
+
+                    // Mostrar os dados atualizados na tabela
+                    usuariosShowListData();
+
+                    // Limpar todos os campos
+                    usuariosClear();
+                }
             }
 
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-   
+
     public void usuariosClear() {
 
         usuario_id.setText("");
@@ -1547,11 +1559,98 @@ public class menu implements Initializable {
         }
 
     }
+    
+    public void atualizarSenha() {
+        Alert alert;
+
+        // Campos para senha atual e nova senha
+        PasswordField senhaAtualField = new PasswordField();
+        senhaAtualField.setPromptText("Digite sua senha atual");
+
+        PasswordField novaSenhaField = new PasswordField();
+        novaSenhaField.setPromptText("Digite a nova senha");
+
+        PasswordField confirmarNovaSenhaField = new PasswordField();
+        confirmarNovaSenhaField.setPromptText("Confirme a nova senha");
+
+        // Caixa de diálogo para entrada das senhas
+        alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Atualizar Senha");
+        alert.setHeaderText("Por favor, insira a senha atual e a nova senha.");
+        alert.getDialogPane().setContent(new VBox(senhaAtualField, novaSenhaField, confirmarNovaSenhaField));
+        Optional<ButtonType> resultado = alert.showAndWait();
+
+        if (resultado.isPresent() && resultado.get() == ButtonType.OK) {
+            String senhaAtual = senhaAtualField.getText();
+            String novaSenha = novaSenhaField.getText();
+            String confirmarNovaSenha = confirmarNovaSenhaField.getText();
+
+            if (novaSenha.isEmpty() || confirmarNovaSenha.isEmpty()) {
+                mostrarMensagem("Erro", "A nova senha e a confirmação não podem estar em branco.");
+                return;
+            }
+
+            if (!novaSenha.equals(confirmarNovaSenha)) {
+                mostrarMensagem("Erro", "A nova senha e a confirmação devem ser iguais.");
+                return;
+            }
+
+            // Verifique a senha atual do usuário no banco de dados
+            String sql = "SELECT senha FROM usuarios WHERE id = ?";
+            connect = database.connectDb();
+            try {
+                prepare = connect.prepareStatement(sql);
+                prepare.setInt(1, getData.userId); // Use o ID do usuário logado
+                result = prepare.executeQuery();
+
+                if (result.next()) {
+                    String senhaExistente = result.getString("senha");
+
+                    if (!senhaExistente.equals(senhaAtual)) {
+                        mostrarMensagem("Erro", "Senha atual incorreta.");
+                        return;
+                    }
+
+                    // Atualize a senha para a nova senha
+                    sql = "UPDATE usuarios SET senha = ? WHERE id = ?";
+                    prepare = connect.prepareStatement(sql);
+                    prepare.setString(1, novaSenha);
+                    prepare.setInt(2, getData.userId);
+
+                    int rowsAffected = prepare.executeUpdate();
+                    if (rowsAffected > 0) {
+                        mostrarMensagem("Sucesso", "Senha atualizada com sucesso!");
+                    } else {
+                        mostrarMensagem("Erro", "Falha ao atualizar a senha.");
+                    }
+                } else {
+                    mostrarMensagem("Erro", "Usuário não encontrado.");
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                mostrarMensagem("Erro", "Ocorreu um erro: " + e.getMessage());
+            }
+        }
+    }
+
+    // Método auxiliar para exibir alertas
+    private void mostrarMensagem(String titulo, String mensagem) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle(titulo);
+        alert.setHeaderText(null);
+        alert.setContentText(mensagem);
+        alert.showAndWait();
+    }
+
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         displayUsername();
         verificarPermissaoUsuario();
+        loadCultivarDescriptions();
+        loadLocalizacaoDescriptions();
+        loadEstadoDescriptions();
+        loadUsuariosTipoDescriptions();
        
     }
 
