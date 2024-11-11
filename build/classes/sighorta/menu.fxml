@@ -260,7 +260,7 @@
                                           </AnchorPane>
                                        </children>
                                     </AnchorPane>
-                                    <AnchorPane fx:id="plantio_page" layoutX="10.0" layoutY="10.0" prefHeight="554.4" prefWidth="891.2" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                    <AnchorPane fx:id="plantio_page" layoutX="10.0" layoutY="10.0" prefHeight="554.4" prefWidth="891.2" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                        <children>
                                           <AnchorPane layoutX="14.0" layoutY="14.0" prefHeight="740.0" prefWidth="300.0" stylesheets="@menu.css" AnchorPane.topAnchor="12.0">
                                              <styleClass>
@@ -309,7 +309,7 @@
                                                       <ComboBox fx:id="plantio_cultivar" layoutX="10.0" layoutY="160.0" onAction="#loadCultivarDescriptions" prefHeight="35.0" prefWidth="280.0" styleClass="textfield" stylesheets="@menu.css" />
                                                       <ComboBox fx:id="plantio_localizacao" layoutX="10.0" layoutY="224.0" onAction="#loadLocalizacaoDescriptions" prefHeight="35.0" prefWidth="280.0" styleClass="textfield" stylesheets="@menu.css" />
                                                       <DatePicker fx:id="dataPlantio" layoutX="11.0" layoutY="287.0" prefHeight="35.0" prefWidth="280.0" styleClass="textfield" />
-                                                      <Label layoutX="17.0" layoutY="326.0" text="Estado do plantio">
+                                                      <Label layoutX="17.0" layoutY="326.0" text="Estado do cultivo">
                                                          <font>
                                                             <Font name="Arial Bold" size="15.0" />
                                                          </font>
@@ -428,6 +428,16 @@
                                                 </AnchorPane>
                                              </children>
                                           </AnchorPane>
+                                       </children>
+                                    </AnchorPane>
+                                    <AnchorPane fx:id="embreve_page" prefHeight="790.4" prefWidth="1147.1999999999998" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                       <children>
+                                          <Label fx:id="usuario_menu1" alignment="CENTER" layoutX="356.0" layoutY="366.0" onDragDetected="#displayUsername" prefHeight="58.0" prefWidth="434.0" text="Em Breve..." textFill="#4a7c59">
+                                             <font>
+                                                <Font name="Arial Bold" size="50.0" />
+                                             </font>
+                                          </Label>
+                                          <FontAwesomeIcon fill="#4a7c59" glyphName="PAGELINES" layoutX="526.0" layoutY="340.0" size="10em" text="" />
                                        </children>
                                     </AnchorPane>
                                  </children>

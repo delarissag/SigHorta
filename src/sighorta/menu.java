@@ -257,6 +257,9 @@ public class menu implements Initializable {
 
     @FXML
     private AnchorPane usuarios_page;
+    
+    @FXML
+    private AnchorPane embreve_page;
 
     @FXML
     private ComboBox<String> usuarios_tipo;
@@ -386,16 +389,14 @@ public class menu implements Initializable {
     }
 
     public void plantioAdd() {
-
-        String sql = "INSERT INTO plantio (id_cultivar, id_localizacao, dataPlantio, estado) "
-                + "VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO plantio (id_cultivar, id_localizacao, dataPlantio, estado, dataColheitaEstimada) "
+                   + "VALUES (?, ?, ?, ?, ?)";
 
         connect = database.connectDb();
 
         try {
             Alert alert;
 
-            // Verifique se os campos obrigatórios estão preenchidos
             if (plantio_cultivar.getSelectionModel().getSelectedItem() == null
                     || plantio_localizacao.getSelectionModel().getSelectedItem() == null
                     || dataPlantio.getValue() == null
@@ -408,10 +409,9 @@ public class menu implements Initializable {
                 alert.showAndWait();
 
             } else {
-                // Obter os IDs correspondentes das descrições selecionadas nos ComboBox
-                Integer cultivarId = getIdByDescription("cultivar", "nome_popular", (String) plantio_cultivar.getSelectionModel().getSelectedItem());
-                Integer localizacaoId = getIdByDescription("localizacao", "descricao", (String) plantio_localizacao.getSelectionModel().getSelectedItem());
-                Integer estadoId = getIdByDescription("estado_plantio", "descricao", (String) plantio_estado.getSelectionModel().getSelectedItem());
+                Integer cultivarId = getIdByDescription("cultivar", "nome_popular", plantio_cultivar.getSelectionModel().getSelectedItem());
+                Integer localizacaoId = getIdByDescription("localizacao", "descricao", plantio_localizacao.getSelectionModel().getSelectedItem());
+                Integer estadoId = getIdByDescription("estado_plantio", "descricao", plantio_estado.getSelectionModel().getSelectedItem());
 
                 if (cultivarId == null || localizacaoId == null || estadoId == null) {
                     alert = new Alert(AlertType.ERROR);
@@ -422,16 +422,17 @@ public class menu implements Initializable {
                     return;
                 }
 
-                // Prepara a consulta de inserção
-                prepare = connect.prepareStatement(sql);
-                prepare.setInt(1, cultivarId); // ID do cultivar
-                prepare.setInt(2, localizacaoId); // ID da localização
+                // Obter dataPlantio e calcular dataColheitaEstimada
+                LocalDate plantioDate = dataPlantio.getValue();
+                int diasAteColheita = getDiasAteColheita(cultivarId);
+                LocalDate dataColheitaEstimada = plantioDate.plusDays(diasAteColheita);
 
-                // Assuming dataPlantio is a DatePicker
-                LocalDate localDate = dataPlantio.getValue();
-                java.sql.Date sqlDate = Date.valueOf(localDate);
-                prepare.setString(3, String.valueOf(sqlDate));
-                prepare.setInt(4, estadoId); // ID do estado
+                prepare = connect.prepareStatement(sql);
+                prepare.setInt(1, cultivarId);
+                prepare.setInt(2, localizacaoId);
+                prepare.setDate(3, Date.valueOf(plantioDate));
+                prepare.setInt(4, estadoId);
+                prepare.setDate(5, Date.valueOf(dataColheitaEstimada));  // Adiciona dataColheitaEstimada
 
                 prepare.executeUpdate();
 
@@ -441,10 +442,7 @@ public class menu implements Initializable {
                 alert.setContentText("Adicionado com sucesso!");
                 alert.showAndWait();
 
-                // Atualizar a TableView com os dados mais recentes
                 plantioShowListData();
-
-                // Limpar todos os campos
                 plantioClear();
             }
 
@@ -500,81 +498,117 @@ public class menu implements Initializable {
         return estado;
     }
 
-    public void plantioUpdate() {
+public void plantioUpdate() {
+    // Obter o ID correspondente das descrições selecionadas nos ComboBox
+    Integer cultivarId = getIdByDescription("cultivar", "nome_popular", plantio_cultivar.getSelectionModel().getSelectedItem());
+    Integer localizacaoId = getIdByDescription("localizacao", "descricao", plantio_localizacao.getSelectionModel().getSelectedItem());
+    String estadoSelecionado = plantio_estado.getSelectionModel().getSelectedItem();
+    Integer estadoId = getIdByDescription("estado_plantio", "descricao", estadoSelecionado);
+    String plantioId = id_plantio.getText();
 
-        // Obter o ID correspondente das descrições selecionadas nos ComboBox
-        Integer cultivarId = getIdByDescription("cultivar", "nome_popular", (String) plantio_cultivar.getSelectionModel().getSelectedItem());
-        Integer localizacaoId = getIdByDescription("localizacao", "descricao", (String) plantio_localizacao.getSelectionModel().getSelectedItem());
-        String estadoSelecionado = plantio_estado.getSelectionModel().getSelectedItem();
-        Integer estadoId = getIdByDescription("estado_plantio", "descricao", estadoSelecionado);
-        String plantioId = id_plantio.getText();
+    if (cultivarId == null || localizacaoId == null || estadoId == null) {
+        Alert alert = new Alert(AlertType.ERROR);
+        alert.setTitle("Mensagem de Erro");
+        alert.setHeaderText(null);
+        alert.setContentText("Erro ao obter ID para uma das seleções.");
+        alert.showAndWait();
+        return;
+    }
 
-        if (cultivarId == null || localizacaoId == null || estadoId == null) {
-            Alert alert = new Alert(AlertType.ERROR);
+    LocalDate plantioDate = dataPlantio.getValue();
+    if (plantioDate == null) {
+        Alert alert = new Alert(AlertType.ERROR);
+        alert.setTitle("Mensagem de Erro");
+        alert.setHeaderText(null);
+        alert.setContentText("Data de plantio não pode estar vazia.");
+        alert.showAndWait();
+        return;
+    }
+
+    // Obter dias_ate_colheita e calcular dataColheitaEstimada
+    int diasAteColheita = getDiasAteColheita(cultivarId);
+    if (diasAteColheita == 0) {
+        Alert alert = new Alert(AlertType.ERROR);
+        alert.setTitle("Mensagem de Erro");
+        alert.setHeaderText(null);
+        alert.setContentText("Dias até colheita não podem ser zero.");
+        alert.showAndWait();
+        return;
+    }
+
+    LocalDate dataColheitaEstimada = plantioDate.plusDays(diasAteColheita);
+
+    // Preparar a instrução SQL de atualização incluindo dataColheitaEstimada
+    String sql = "UPDATE plantio SET id_cultivar = ?, id_localizacao = ?, dataPlantio = ?, estado = ?, dataColheitaEstimada = ? WHERE id = ?";
+
+    connect = database.connectDb();
+
+    try {
+        Alert alert;
+
+        if (plantio_cultivar.getSelectionModel().getSelectedItem() == null
+                || plantio_localizacao.getSelectionModel().getSelectedItem() == null
+                || dataPlantio.getValue() == null
+                || estadoSelecionado == null) {
+            alert = new Alert(AlertType.ERROR);
             alert.setTitle("Mensagem de Erro");
             alert.setHeaderText(null);
-            alert.setContentText("Erro ao obter ID para uma das seleções.");
+            alert.setContentText("Por favor, preencha todos os campos obrigatórios.");
             alert.showAndWait();
-            return;
-        }
 
-        // Preparar a instrução SQL de atualização
-        String sql = "UPDATE plantio SET id_cultivar = " + cultivarId
-                + ", id_localizacao = " + localizacaoId
-                + ", dataPlantio = '" + java.sql.Date.valueOf(dataPlantio.getValue()) + "'"
-                + ", estado = " + estadoId
-                + " WHERE id = '" + plantioId + "'";
+        } else {
+            alert = new Alert(AlertType.CONFIRMATION);
+            alert.setTitle("Mensagem de Confirmação");
+            alert.setHeaderText(null);
+            alert.setContentText("Tem certeza de que deseja atualizar o Plantio ID: " + plantioId + "?");
+            Optional<ButtonType> option = alert.showAndWait();
 
-        connect = database.connectDb();
+            if (option.isPresent() && option.get().equals(ButtonType.OK)) {
+                prepare = connect.prepareStatement(sql);
+                prepare.setInt(1, cultivarId);
+                prepare.setInt(2, localizacaoId);
+                prepare.setDate(3, Date.valueOf(plantioDate));
+                prepare.setInt(4, estadoId);
+                prepare.setDate(5, Date.valueOf(dataColheitaEstimada));
+                prepare.setInt(6, Integer.parseInt(plantioId));
 
-        try {
-            Alert alert;
+                prepare.executeUpdate();
 
-            // Verificar se todos os campos obrigatórios estão preenchidos
-            if (plantio_cultivar.getSelectionModel().getSelectedItem() == null
-                    || plantio_localizacao.getSelectionModel().getSelectedItem() == null
-                    || dataPlantio.getValue() == null
-                    || estadoSelecionado == null) {
-                System.out.println(plantio_cultivar.getSelectionModel().getSelectedItem());
-                System.out.println(plantio_localizacao.getSelectionModel().getSelectedItem());
-                System.out.println(dataPlantio.getValue());
-                alert = new Alert(AlertType.ERROR);
-                alert.setTitle("Mensagem de Erro");
+                alert = new Alert(AlertType.INFORMATION);
+                alert.setTitle("Mensagem de Informação");
                 alert.setHeaderText(null);
-                alert.setContentText("Por favor, preencha todos os campos obrigatórios.");
+                alert.setContentText("Atualização realizada com sucesso!");
                 alert.showAndWait();
 
-            } else {
-                // Confirmar atualização
-                alert = new Alert(AlertType.CONFIRMATION);
-                alert.setTitle("Mensagem de Confirmação");
-                alert.setHeaderText(null);
-                alert.setContentText("Tem certeza de que deseja atualizar o Plantio ID: " + plantioId + "?");
-                Optional<ButtonType> option = alert.showAndWait();
-
-                if (option.get().equals(ButtonType.OK)) {
-                    // Executa a atualização
-                    statement = connect.createStatement();
-                    statement.executeUpdate(sql);
-
-                    alert = new Alert(AlertType.INFORMATION);
-                    alert.setTitle("Mensagem de Informação");
-                    alert.setHeaderText(null);
-                    alert.setContentText("Atualização realizada com sucesso!");
-                    alert.showAndWait();
-
-                    // Mostrar dados atualizados na TableView
-                    plantioShowListData();
-
-                    // Limpar todos os campos
-                    plantioClear();
-                }
+                plantioShowListData();
+                plantioClear();
             }
-
-        } catch (Exception e) {
-            e.printStackTrace();
         }
+
+    } catch (Exception e) {
+        e.printStackTrace();
     }
+}
+
+// Método para buscar dias_ate_colheita do cultivar com base no id
+private int getDiasAteColheita(int cultivarId) {
+    int diasAteColheita = 0;
+    String sql = "SELECT dias_ate_colheita FROM cultivar WHERE id = ?";
+
+    try {
+        prepare = connect.prepareStatement(sql);
+        prepare.setInt(1, cultivarId);
+        result = prepare.executeQuery();
+
+        if (result.next()) {
+            diasAteColheita = result.getInt("dias_ate_colheita");
+        }
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+
+    return diasAteColheita;
+}
 
     public void plantioClear() {
 
@@ -1455,7 +1489,11 @@ public class menu implements Initializable {
         usuarios_button.setVisible(tipoUsuarioAtual == 3);
         cultivar_button.setVisible(tipoUsuarioAtual == 3);
         localizacao_button.setVisible(tipoUsuarioAtual == 3);
-        plantio_button.setVisible(tipoUsuarioAtual != 1);
+        plantio_addButton.setVisible(tipoUsuarioAtual != 1);
+        plantio_delButton.setVisible(tipoUsuarioAtual != 1);
+        plantio_editButton.setVisible(tipoUsuarioAtual != 1);
+        plantio_clearButton.setVisible(tipoUsuarioAtual != 1);
+
     }
 
     private int getTipoUsuarioAtual() {
@@ -1485,6 +1523,7 @@ public class menu implements Initializable {
             cultivar_page.setVisible(false);
             localizacao_page.setVisible(false);
             usuarios_page.setVisible(false);
+            embreve_page.setVisible(true);
 
             home_button.setStyle("-fx-background-color:linear-gradient(to bottom right, #d3133d, #a4262f)");
             relatorios_button.setStyle("-fx-background-color: transparent");
@@ -1499,6 +1538,7 @@ public class menu implements Initializable {
             cultivar_page.setVisible(false);
             localizacao_page.setVisible(false);
             usuarios_page.setVisible(false);
+            embreve_page.setVisible(false);
 
             plantio_button.setStyle("-fx-background-color:linear-gradient(to bottom right, #d3133d, #a4262f)");
             relatorios_button.setStyle("-fx-background-color: transparent");
@@ -1515,6 +1555,7 @@ public class menu implements Initializable {
             cultivar_page.setVisible(true);
             localizacao_page.setVisible(false);
             usuarios_page.setVisible(false);
+            embreve_page.setVisible(false);
             
 
             cultivar_button.setStyle("-fx-background-color:linear-gradient(to bottom right, #d3133d, #a4262f)");
@@ -1523,6 +1564,7 @@ public class menu implements Initializable {
             plantio_button.setStyle("-fx-background-color: transparent");
             localizacao_button.setStyle("-fx-background-color: transparent");
             usuarios_button.setStyle("-fx-background-color: transparent");
+            embreve_page.setVisible(false);
             
             cultivarShowListData();
 
@@ -1532,6 +1574,7 @@ public class menu implements Initializable {
             cultivar_page.setVisible(false);
             localizacao_page.setVisible(true);
             usuarios_page.setVisible(false);
+            embreve_page.setVisible(false);
 
             localizacao_button.setStyle("-fx-background-color:linear-gradient(to bottom right, #d3133d, #a4262f)");
             relatorios_button.setStyle("-fx-background-color: transparent");
@@ -1548,6 +1591,7 @@ public class menu implements Initializable {
             cultivar_page.setVisible(false);
             localizacao_page.setVisible(false);
             usuarios_page.setVisible(true);
+            embreve_page.setVisible(false);
 
             usuarios_button.setStyle("-fx-background-color:linear-gradient(to bottom right, #d3133d, #a4262f)");
             relatorios_button.setStyle("-fx-background-color: transparent");
@@ -1557,7 +1601,21 @@ public class menu implements Initializable {
             localizacao_button.setStyle("-fx-background-color: transparent");
             usuariosShowListData();
         }
+        else if (event.getSource() == relatorios_button) {
+            plantio_page.setVisible(false);
+            cultivar_page.setVisible(false);
+            localizacao_page.setVisible(false);
+            usuarios_page.setVisible(false);
+            embreve_page.setVisible(true);
 
+            relatorios_button.setStyle("-fx-background-color:linear-gradient(to bottom right, #d3133d, #a4262f)");
+            usuarios_button.setStyle("-fx-background-color: transparent");
+            home_button.setStyle("-fx-background-color: transparent");
+            plantio_button.setStyle("-fx-background-color: transparent");
+            cultivar_button.setStyle("-fx-background-color: transparent");
+            localizacao_button.setStyle("-fx-background-color: transparent");
+            usuariosShowListData();
+        }
     }
     
     public void atualizarSenha() {
