@@ -152,9 +152,6 @@ public class menu implements Initializable {
     private ComboBox<String> plantio_localizacao;
 
     @FXML
-    private TextField plantio_search;
-
-    @FXML
     private TextField id_plantio;
 
     @FXML
@@ -216,6 +213,48 @@ public class menu implements Initializable {
 
     @FXML
     private Button usuarios_button;
+    
+        @FXML
+    private TableView<usuariosData> table_usuarios;
+
+    @FXML
+    private TableColumn<usuariosData, String> table_usuarios_email;
+
+    @FXML
+    private TableColumn<usuariosData, Integer> table_usuarios_id;
+
+    @FXML
+    private TableColumn<usuariosData, String> table_usuarios_nome;
+
+    @FXML
+    private TableColumn<usuariosData, String> table_usuarios_tipo;
+
+    @FXML
+    private TextField usuario_email;
+
+    @FXML
+    private TextField usuario_id;
+
+    @FXML
+    private Button usuarios_addButton;
+
+    @FXML
+    private Button usuarios_clearButton;
+
+    @FXML
+    private Button usuarios_delButton;
+
+    @FXML
+    private Button usuarios_editButton;
+
+    @FXML
+    private TextField usuarios_nome;
+
+    @FXML
+    private AnchorPane usuarios_page;
+
+    @FXML
+    private ComboBox<String> usuarios_tipo;
 
     @FXML
     public void close() {
@@ -570,7 +609,7 @@ public class menu implements Initializable {
                     statement.executeUpdate(sql);
 
                     alert = new Alert(AlertType.INFORMATION);
-                    alert.setTitle("Information Message");
+                    alert.setTitle("Messagem");
                     alert.setHeaderText(null);
                     alert.setContentText("Deletado com sucesso!");
                     alert.showAndWait();
@@ -745,7 +784,7 @@ public class menu implements Initializable {
                 prepare.executeUpdate();
 
                 alert = new Alert(AlertType.INFORMATION);
-                alert.setTitle("Information Message");
+                alert.setTitle("Messagem");
                 alert.setHeaderText(null);
                 alert.setContentText("Successfully Added!");
                 alert.showAndWait();
@@ -873,7 +912,7 @@ public class menu implements Initializable {
                     statement.executeUpdate(sql);
 
                     alert = new Alert(AlertType.INFORMATION);
-                    alert.setTitle("Information Message");
+                    alert.setTitle("Messagem");
                     alert.setHeaderText(null);
                     alert.setContentText("Deletado com sucesso!");
                     alert.showAndWait();
@@ -892,7 +931,7 @@ public class menu implements Initializable {
 
     }
     
-        public ObservableList<localizacaoData> localizacaoData() {
+    public ObservableList<localizacaoData> localizacaoData() {
         ObservableList<localizacaoData> listData = FXCollections.observableArrayList();
         String sql = "SELECT l.id, l.descricao, l.coluna, l.linha"
                 + " FROM localizacao l";
@@ -964,9 +1003,9 @@ public class menu implements Initializable {
 
             if (result.next()) {
                 alert = new Alert(AlertType.ERROR);
-                alert.setTitle("Error Message");
+                alert.setTitle("Mensagem de Erro");
                 alert.setHeaderText(null);
-                alert.setContentText("Cultivar ID " + localizacao_id.getText() + " já existente!");
+                alert.setContentText("Localizacao ID " + localizacao_id.getText() + " já existente!");
                 alert.showAndWait();
             } else {
                 prepare = connect.prepareStatement(sql);
@@ -977,7 +1016,7 @@ public class menu implements Initializable {
                 prepare.executeUpdate();
 
                 alert = new Alert(AlertType.INFORMATION);
-                alert.setTitle("Information Message");
+                alert.setTitle("Messagem");
                 alert.setHeaderText(null);
                 alert.setContentText("Successfully Added!");
                 alert.showAndWait();
@@ -1104,7 +1143,7 @@ public class menu implements Initializable {
                     statement.executeUpdate(sql);
 
                     alert = new Alert(AlertType.INFORMATION);
-                    alert.setTitle("Information Message");
+                    alert.setTitle("Messagem");
                     alert.setHeaderText(null);
                     alert.setContentText("Deletado com sucesso!");
                     alert.showAndWait();
@@ -1122,6 +1161,309 @@ public class menu implements Initializable {
         }
 
     }
+    
+    public ObservableList<usuariosData> usuariosData() {
+        ObservableList<usuariosData> listData = FXCollections.observableArrayList();
+        String sql = "SELECT u.id, u.nome, u.email, tu.descricao as tipoUsuario"
+                + " FROM usuarios u"
+                + " JOIN tipo_usuario tu ON u.tipo_usuario = tu.id "
+                + " WHERE status = '1'";
+
+        connect = database.connectDb();
+
+        try {
+            prepare = connect.prepareStatement(sql);
+            result = prepare.executeQuery();
+
+            while (result.next()) {
+                // Construa o objeto plantioData com os valores retornados
+                usuariosData usuario = new usuariosData(
+                        result.getInt("id"),
+                        result.getString("nome"),
+                        result.getString("email"),
+                        result.getString("tipoUsuario")
+                );
+
+                listData.add(usuario);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return listData;
+    }
+
+    public ObservableList<usuariosData> usuariosList;
+
+    public void usuariosShowListData() {
+
+        usuariosList = usuariosData();
+
+        table_usuarios_id.setCellValueFactory(new PropertyValueFactory<>("usuarios_id"));
+        table_usuarios_nome.setCellValueFactory(new PropertyValueFactory<>("usuarios_nome"));
+        table_usuarios_email.setCellValueFactory(new PropertyValueFactory<>("usuarios_email"));
+        table_usuarios_tipo.setCellValueFactory(new PropertyValueFactory<>("usuarios_tipo"));
+
+        table_usuarios.setItems(usuariosList);
+    }
+
+    public void usuariosAdd() {
+        
+        String sql = "INSERT INTO usuarios (nome,email,tipo_usuario) "
+                + "VALUES (?, ?, ?)";
+
+        connect = database.connectDb();
+
+        try {
+            Alert alert;
+
+            // Verifique se os campos obrigatórios estão preenchidos
+            if (usuarios_nome.getText().isEmpty()
+                    || usuario_email.getText().isEmpty()
+                    || usuarios_tipo.getSelectionModel().getSelectedItem() == null) {
+                
+                alert = new Alert(AlertType.ERROR);
+                alert.setTitle("Mensagem de Erro");
+                alert.setHeaderText(null);
+                alert.setContentText("Por favor, preencha todos os campos em branco.");
+                alert.showAndWait();
+
+            } 
+            String checkData = "SELECT id FROM usuarios WHERE id = '"
+                    + usuario_id.getText() + "'";
+
+            statement = connect.createStatement();
+            result = statement.executeQuery(checkData);
+            Integer tipoUsuarioId = getIdByDescription("tipo_usuario", "descricao", (String) usuarios_tipo.getSelectionModel().getSelectedItem());
+
+            if (result.next()) {
+                alert = new Alert(AlertType.ERROR);
+                alert.setTitle("Error Message");
+                alert.setHeaderText(null);
+                alert.setContentText("Usuario ID " + usuario_id.getText() + " já existente!");
+                alert.showAndWait();
+            } else {
+                prepare = connect.prepareStatement(sql);
+                prepare.setString(1, usuarios_nome.getText());
+                prepare.setString(2, usuario_email.getText());
+                prepare.setInt(3, tipoUsuarioId);
+                
+                prepare.executeUpdate();
+
+                alert = new Alert(AlertType.INFORMATION);
+                alert.setTitle("Mensagem");
+                alert.setHeaderText(null);
+                alert.setContentText("Adicionado com sucesso!");
+                alert.showAndWait();
+
+                // SHOW UPDATED TABLEVIEW
+                usuariosShowListData();
+
+                // CLEAR ALL FIELDS
+                usuariosClear();
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+   
+    public void usuariosClear() {
+
+        usuario_id.setText("");
+        usuarios_nome.setText("");
+        usuario_email.setText("");
+        usuarios_tipo.getSelectionModel().clearSelection();
+        
+    }
+    
+    public void usuariosUpdate() {
+        Integer tipoUsuarioId = getIdByDescription("tipo_usuario", "descricao", (String) usuarios_tipo.getSelectionModel().getSelectedItem());
+        // Preparar a instrução SQL de atualização     
+        String sql = "UPDATE usuarios SET nome = '" + usuarios_nome.getText()
+           + "', email = '" + usuario_email.getText()
+           + "', tipo_usuario = '" + tipoUsuarioId
+           + "' WHERE id = '" + usuario_id.getText() + "'";
+        connect = database.connectDb();
+
+        try {
+            Alert alert;
+
+            // Verificar se todos os campos obrigatórios estão preenchidos
+            if (usuario_id.getText().isEmpty()
+                    || usuarios_nome.getText().isEmpty()
+                    || usuario_email.getText().isEmpty()) {
+
+                alert = new Alert(AlertType.ERROR);
+                alert.setTitle("Mensagem de Erro");
+                alert.setHeaderText(null);
+                alert.setContentText("Por favor, preencha todos os campos obrigatórios.");
+                alert.showAndWait();
+
+            } else {
+                // Confirmar atualização
+                alert = new Alert(AlertType.CONFIRMATION);
+                alert.setTitle("Mensagem de Confirmação");
+                alert.setHeaderText(null);
+                alert.setContentText("Tem certeza de que deseja atualizar o Usuario ID: " + usuario_id.getText() + "?");
+                Optional<ButtonType> option = alert.showAndWait();
+
+                if (option.get().equals(ButtonType.OK)) {
+                    // Executa a atualização
+                    statement = connect.createStatement();
+                    statement.executeUpdate(sql);
+
+                    alert = new Alert(AlertType.INFORMATION);
+                    alert.setTitle("Mensagem de Informação");
+                    alert.setHeaderText(null);
+                    alert.setContentText("Atualização realizada com sucesso!");
+                    alert.showAndWait();
+
+                    // Mostrar dados atualizados na TableView
+                    usuariosShowListData();
+
+                    // Limpar todos os campos
+                    usuariosClear();
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    public void usuariosSelect() {
+        usuariosData usuario = table_usuarios.getSelectionModel().getSelectedItem();
+        if (usuario == null) {
+            System.out.println("Nenhum usuario foi selecionado.");
+            return;  // Se não houver seleção, retorna sem fazer mais nada
+        }
+        int num = table_usuarios.getSelectionModel().getSelectedIndex();
+
+        if ((num - 1) < -1) {
+            return;
+        }
+
+        usuario_id.setText(String.valueOf(usuario.getUsuarios_id()));
+        usuarios_nome.setText(usuario.getUsuarios_nome());
+        usuario_email.setText(usuario.getUsuarios_email());
+        String tipo = getTipoById(usuario.getUsuarios_id());
+        // Preenche o ComboBox com o tipo
+        usuarios_tipo.setValue(tipo);
+    }
+    
+    private String getTipoById(int usuarioId) {
+        String tipo = null;
+        String sql = "SELECT tu.descricao FROM usuarios u "
+                + "JOIN tipo_usuario tu ON u.tipo_usuario = tu.id "
+                + "WHERE u.id = ?";
+
+        try {
+            // Conecta ao banco de dados
+            connect = database.connectDb();
+            prepare = connect.prepareStatement(sql);
+            prepare.setInt(1, usuarioId);  // Define o ID do plantio
+            result = prepare.executeQuery();
+
+            // Se um resultado for encontrado, obtém a descrição do estado
+            if (result.next()) {
+                tipo = result.getString("descricao");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return tipo;
+    }
+    public void usuariosDelete() {
+        String sql = "UPDATE usuarios SET status = 0 WHERE id = ?";
+
+        connect = database.connectDb();
+
+        try {
+            Alert alert;
+
+            if (usuario_id.getText().isEmpty()) {
+                alert = new Alert(AlertType.ERROR);
+                alert.setTitle("Erro");
+                alert.setHeaderText(null);
+                alert.setContentText("Por gentileza, filtre o id do item que deseja deletar");
+                alert.showAndWait();
+
+            } else {          
+                alert = new Alert(AlertType.CONFIRMATION);
+                alert.setTitle("Messagem de confirmação");
+                alert.setHeaderText(null);
+                alert.setContentText("Você tem certeza que deseja deletar o usuario : " + usuario_id.getText() + "?");
+                Optional<ButtonType> option = alert.showAndWait();
+
+                if (option.get().equals(ButtonType.OK)) {
+                    prepare = connect.prepareStatement(sql);
+                    prepare.setInt(1, Integer.parseInt(usuario_id.getText()));
+                    prepare.executeUpdate();
+
+                    alert = new Alert(AlertType.INFORMATION);
+                    alert.setTitle("Messagem");
+                    alert.setHeaderText(null);
+                    alert.setContentText("Deletado com sucesso!");
+                    alert.showAndWait();
+
+                    // SHOW UPDATED TABLEVIEW
+                    usuariosShowListData();
+
+                    // CLEAR ALL FIELDS
+                    usuariosClear();
+                }
+
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+    public void loadUsuariosTipoDescriptions() {
+        ObservableList<String> usuariosTipoDescriptions = FXCollections.observableArrayList();
+        String sql = "SELECT descricao FROM tipo_usuario";
+
+        connect = database.connectDb();
+        try {
+            prepare = connect.prepareStatement(sql);
+            result = prepare.executeQuery();
+
+            while (result.next()) {
+                usuariosTipoDescriptions.add(result.getString("descricao"));
+            }
+            usuarios_tipo.setItems(usuariosTipoDescriptions); // Definir os itens no ComboBox
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    private void verificarPermissaoUsuario() {
+        int tipoUsuarioAtual = getTipoUsuarioAtual();
+
+        // Torna o botão visível apenas se o tipo de usuário for 3
+        usuarios_button.setVisible(tipoUsuarioAtual == 3);
+        cultivar_button.setVisible(tipoUsuarioAtual == 3);
+        localizacao_button.setVisible(tipoUsuarioAtual == 3);
+        plantio_button.setVisible(tipoUsuarioAtual != 1);
+    }
+
+    private int getTipoUsuarioAtual() {
+        int tipoUsuario = -1;
+        String sql = "SELECT tipo_usuario FROM usuarios WHERE id = ?"; // A tabela e coluna podem variar conforme o seu banco de dados
+
+        connect = database.connectDb();
+        try {
+            prepare = connect.prepareStatement(sql);
+            prepare.setInt(1, getData.userId); // Supondo que getData.username tenha o nome do usuário logado
+            result = prepare.executeQuery();
+
+            if (result.next()) {
+                tipoUsuario = result.getInt("tipo_usuario");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return tipoUsuario;
+    }
 
 
     public void switchForm(ActionEvent event) {
@@ -1130,6 +1472,7 @@ public class menu implements Initializable {
             plantio_page.setVisible(false);
             cultivar_page.setVisible(false);
             localizacao_page.setVisible(false);
+            usuarios_page.setVisible(false);
 
             home_button.setStyle("-fx-background-color:linear-gradient(to bottom right, #d3133d, #a4262f)");
             relatorios_button.setStyle("-fx-background-color: transparent");
@@ -1143,6 +1486,7 @@ public class menu implements Initializable {
             plantio_page.setVisible(true);
             cultivar_page.setVisible(false);
             localizacao_page.setVisible(false);
+            usuarios_page.setVisible(false);
 
             plantio_button.setStyle("-fx-background-color:linear-gradient(to bottom right, #d3133d, #a4262f)");
             relatorios_button.setStyle("-fx-background-color: transparent");
@@ -1158,6 +1502,7 @@ public class menu implements Initializable {
             plantio_page.setVisible(false);
             cultivar_page.setVisible(true);
             localizacao_page.setVisible(false);
+            usuarios_page.setVisible(false);
             
 
             cultivar_button.setStyle("-fx-background-color:linear-gradient(to bottom right, #d3133d, #a4262f)");
@@ -1174,6 +1519,7 @@ public class menu implements Initializable {
             plantio_page.setVisible(false);
             cultivar_page.setVisible(false);
             localizacao_page.setVisible(true);
+            usuarios_page.setVisible(false);
 
             localizacao_button.setStyle("-fx-background-color:linear-gradient(to bottom right, #d3133d, #a4262f)");
             relatorios_button.setStyle("-fx-background-color: transparent");
@@ -1183,12 +1529,30 @@ public class menu implements Initializable {
             usuarios_button.setStyle("-fx-background-color: transparent");
             localizacaoShowListData();
         }
+        
+        else if (event.getSource() == usuarios_button) {
+            usuariosClear();
+            plantio_page.setVisible(false);
+            cultivar_page.setVisible(false);
+            localizacao_page.setVisible(false);
+            usuarios_page.setVisible(true);
+
+            usuarios_button.setStyle("-fx-background-color:linear-gradient(to bottom right, #d3133d, #a4262f)");
+            relatorios_button.setStyle("-fx-background-color: transparent");
+            home_button.setStyle("-fx-background-color: transparent");
+            plantio_button.setStyle("-fx-background-color: transparent");
+            cultivar_button.setStyle("-fx-background-color: transparent");
+            localizacao_button.setStyle("-fx-background-color: transparent");
+            usuariosShowListData();
+        }
 
     }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         displayUsername();
+        verificarPermissaoUsuario();
+       
     }
 
 }

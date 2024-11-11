@@ -85,6 +85,7 @@ public class FXMLDocumentController implements Initializable {
                     
                     String nomeUsuario = result.getString("nome"); 
                     getData.username = nomeUsuario;
+                    getData.userId = result.getInt("id");
 
                     // Fechar a janela de login
                     loginButton.getScene().getWindow().hide();

@@ -338,6 +338,87 @@
                                           </AnchorPane>
                                        </children>
                                     </AnchorPane>
+                                    <AnchorPane fx:id="usuarios_page" layoutX="10.0" layoutY="10.0" prefHeight="554.4" prefWidth="891.2" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                       <children>
+                                          <AnchorPane layoutX="14.0" layoutY="14.0" prefHeight="530.0" prefWidth="300.0" stylesheets="@menu.css">
+                                             <styleClass>
+                                                <String fx:value="shadow" />
+                                                <String fx:value="white-bg" />
+                                             </styleClass>
+                                             <children>
+                                                <AnchorPane prefHeight="530.4" prefWidth="300.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                                   <children>
+                                                      <TextField fx:id="usuarios_nome" layoutX="10.0" layoutY="179.0" prefHeight="35.0" prefWidth="280.0" styleClass="textfield" />
+                                                      <Label layoutX="12.0" layoutY="152.0" text="Nome">
+                                                         <font>
+                                                            <Font name="Arial Bold" size="15.0" />
+                                                         </font>
+                                                      </Label>
+                                                      <Label layoutX="48.0" layoutY="21.0" text="Gerenciar Usuários" textFill="#4a7c59">
+                                                         <font>
+                                                            <Font name="Arial Bold" size="22.0" />
+                                                         </font>
+                                                      </Label>
+                                                      <Label layoutX="15.0" layoutY="224.0" text="Email">
+                                                         <font>
+                                                            <Font name="Arial Bold" size="15.0" />
+                                                         </font>
+                                                      </Label>
+                                                      <TextField fx:id="usuario_email" layoutX="10.0" layoutY="251.0" prefHeight="35.0" prefWidth="280.0" styleClass="textfield" />
+                                                      <Label layoutX="16.0" layoutY="297.0" text="Tipo de usuário">
+                                                         <font>
+                                                            <Font name="Arial Bold" size="15.0" />
+                                                         </font>
+                                                      </Label>
+                                                      <Button fx:id="usuarios_addButton" layoutX="34.0" layoutY="406.0" mnemonicParsing="false" onAction="#usuariosAdd" prefHeight="45.0" prefWidth="110.0" styleClass="add-btn" text="Adicionar">
+                                                         <graphic>
+                                                            <FontAwesomeIcon fill="WHITE" glyphName="PLUS" />
+                                                         </graphic>
+                                                      </Button>
+                                                      <Button fx:id="usuarios_delButton" layoutX="155.0" layoutY="406.0" mnemonicParsing="false" onAction="#usuariosDelete" prefHeight="45.0" prefWidth="110.0" styleClass="add-btn" text="Deletar">
+                                                         <graphic>
+                                                            <FontAwesomeIcon fill="WHITE" glyphName="TRASH" />
+                                                         </graphic>
+                                                      </Button>
+                                                      <Button fx:id="usuarios_editButton" layoutX="34.0" layoutY="462.0" mnemonicParsing="false" onAction="#usuariosUpdate" prefHeight="45.0" prefWidth="110.0" styleClass="add-btn" text="Editar">
+                                                         <graphic>
+                                                            <FontAwesomeIcon fill="WHITE" glyphName="PENCIL" />
+                                                         </graphic>
+                                                      </Button>
+                                                      <Button fx:id="usuarios_clearButton" layoutX="155.0" layoutY="462.0" mnemonicParsing="false" onAction="#usuariosClear" prefHeight="45.0" prefWidth="110.0" styleClass="add-btn" text="Limpar" />
+                                                      <TextField fx:id="usuario_id" disable="true" layoutX="10.0" layoutY="111.0" prefHeight="35.0" prefWidth="280.0" styleClass="textfield" />
+                                                      <Label layoutX="12.0" layoutY="86.0" text="ID">
+                                                         <font>
+                                                            <Font name="Arial Bold" size="15.0" />
+                                                         </font>
+                                                      </Label>
+                                                      <ComboBox fx:id="usuarios_tipo" layoutX="10.0" layoutY="326.0" onAction="#loadUsuariosTipoDescriptions" prefHeight="35.0" prefWidth="280.0" styleClass="textfield" stylesheets="@menu.css" />
+                                                   </children>
+                                                </AnchorPane>
+                                             </children>
+                                          </AnchorPane>
+                                          <AnchorPane layoutX="331.0" layoutY="12.0" prefHeight="530.0" prefWidth="545.0" stylesheets="@menu.css">
+                                             <styleClass>
+                                                <String fx:value="shadow" />
+                                                <String fx:value="white-bg" />
+                                             </styleClass>
+                                             <children>
+                                                <AnchorPane layoutX="23.0" layoutY="117.0" prefHeight="530.4" prefWidth="545.6" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                                   <children>
+                                                      <TableView fx:id="table_usuarios" layoutX="21.0" layoutY="73.0" onMouseClicked="#usuariosSelect" prefHeight="530.4" prefWidth="545.6" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                                         <columns>
+                                                            <TableColumn fx:id="table_usuarios_id" prefWidth="61.5999755859375" text="ID" />
+                                                            <TableColumn fx:id="table_usuarios_nome" prefWidth="141.60003662109375" text="NOME" />
+                                                            <TableColumn fx:id="table_usuarios_email" prefWidth="184.79998779296875" text="EMAIL" />
+                                                            <TableColumn fx:id="table_usuarios_tipo" prefWidth="154.4000244140625" text="TIPO DE USUÁRIO" />
+                                                         </columns>
+                                                      </TableView>
+                                                   </children>
+                                                </AnchorPane>
+                                             </children>
+                                          </AnchorPane>
+                                       </children>
+                                    </AnchorPane>
                                  </children>
                               </AnchorPane>
                            </children>
