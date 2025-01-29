@@ -831,7 +831,7 @@ private int getDiasAteColheita(int cultivarId) {
                 alert = new Alert(AlertType.INFORMATION);
                 alert.setTitle("Messagem");
                 alert.setHeaderText(null);
-                alert.setContentText("Successfully Added!");
+                alert.setContentText("Adicionado com sucesso!");
                 alert.showAndWait();
 
                 // SHOW UPDATED TABLEVIEW
@@ -1063,7 +1063,7 @@ private int getDiasAteColheita(int cultivarId) {
                 alert = new Alert(AlertType.INFORMATION);
                 alert.setTitle("Messagem");
                 alert.setHeaderText(null);
-                alert.setContentText("Successfully Added!");
+                alert.setContentText("Adicionado com sucesso!");
                 alert.showAndWait();
 
                 // SHOW UPDATED TABLEVIEW
